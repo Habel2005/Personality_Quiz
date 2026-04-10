@@ -1,7 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { prompts, Choice, getProfile, ProfileResult, TraitVector } from '@/app/lib/personality-data';
+import React, { useState } from 'react';
+import { 
+  prompts, 
+  Choice, 
+  getProfile, 
+  ProfileResult, 
+  TraitVector, 
+  Prompt, 
+  getNextQuestion, 
+  generateCommentary 
+} from '@/app/lib/personality-data';
 import { QuizStep } from '@/components/quiz/QuizStep';
 import { ProfileDisplay } from '@/components/profile/ProfileDisplay';
 import { Progress } from '@/components/ui/progress';
@@ -22,8 +31,13 @@ export default function Home() {
   const [profile, setProfile] = useState<ProfileResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [engineComment, setEngineComment] = useState<string | null>(null);
+  const [askedIds, setAskedIds] = useState<number[]>([]);
+  const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
 
   const handleStart = () => {
+    const firstQuestion = getNextQuestion(INITIAL_VECTOR, [], prompts);
+    setCurrentPrompt(firstQuestion);
+    setAskedIds([firstQuestion.id]);
     setCurrentStep(0);
   };
 
@@ -35,22 +49,25 @@ export default function Home() {
     }
     setVector(nextVector);
 
-    // Dynamic feedback logic
-    const currentPrompt = prompts[currentStep];
-    if (currentPrompt.commentary) {
-      setEngineComment(currentPrompt.commentary);
+    // Adaptive Commentary Logic
+    const dynamicComment = generateCommentary(nextVector, currentStep + 1);
+    if (dynamicComment) {
+      setEngineComment(dynamicComment);
       setTimeout(() => setEngineComment(null), 2500);
     }
 
-    if (currentStep < prompts.length - 1) {
+    if (currentStep < 9) { // 10 question limit
+      const nextQ = getNextQuestion(nextVector, askedIds, prompts);
+      setCurrentPrompt(nextQ);
+      setAskedIds(prev => [...prev, nextQ.id]);
       setCurrentStep(currentStep + 1);
     } else {
       setIsCalculating(true);
       setTimeout(() => {
         setProfile(getProfile(nextVector));
         setIsCalculating(false);
-        setCurrentStep(prompts.length);
-      }, 2500); // Faked "Processing" time
+        setCurrentStep(10);
+      }, 2500);
     }
   };
 
@@ -59,14 +76,16 @@ export default function Home() {
     setVector(INITIAL_VECTOR);
     setProfile(null);
     setEngineComment(null);
+    setAskedIds([]);
+    setCurrentPrompt(null);
   };
 
-  const progress = (currentStep / prompts.length) * 100;
+  const progress = (currentStep / 10) * 100;
 
   return (
     <main className="min-h-screen flex flex-col bg-[#F5F7F9]">
       {/* Header Area */}
-      {currentStep >= 0 && currentStep < prompts.length && (
+      {currentStep >= 0 && currentStep < 10 && (
         <div className="w-full max-w-2xl mx-auto p-6 flex items-center justify-between">
           <Button variant="ghost" size="icon" onClick={handleRestart} className="rounded-full border-2 border-black bg-[#E2F2F0]">
             <ArrowRight className="rotate-180" size={20} />
@@ -97,9 +116,9 @@ export default function Home() {
 
               <div className="space-y-2">
                 <h1 className="text-3xl font-headline font-bold text-black leading-tight">
-                  Nuanced Personality Assessment
+                  Adaptive Personality Engine
                 </h1>
-                <p className="text-muted-foreground text-sm italic">Multi-dimensional Analysis Engine</p>
+                <p className="text-muted-foreground text-sm italic">Entropy-Reducing Neural Analysis</p>
               </div>
 
               <div className="flex justify-center gap-6 text-sm font-medium">
@@ -109,14 +128,14 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={18} className="text-teal-400" />
-                  <span>Vector Scoring</span>
+                  <span>Adaptive Flow</span>
                 </div>
               </div>
 
               <div className="bg-[#E2F2F0] border-2 border-black rounded-3xl p-6 text-left space-y-3">
-                <h3 className="font-bold text-lg">The Scoring Engine</h3>
+                <h3 className="font-bold text-lg">The Adaptive Logic</h3>
                 <p className="text-sm leading-relaxed text-black/70">
-                  This isn't a simple quiz. We track five dimensions of your psyche—Chaos, Logic, Emotion, Imagination, and Order—to build a unique trait vector.
+                  This engine doesn't follow a fixed path. It actively analyzes your choices to select the next most informative probe, pinpointing your psychological center in exactly 10 clicks.
                 </p>
               </div>
 
@@ -131,9 +150,9 @@ export default function Home() {
           </div>
         )}
 
-        {currentStep >= 0 && currentStep < prompts.length && !isCalculating && (
+        {currentStep >= 0 && currentStep < 10 && !isCalculating && currentPrompt && (
           <QuizStep 
-            prompt={prompts[currentStep]} 
+            prompt={currentPrompt} 
             onSelect={handleSelect} 
             stepNumber={currentStep + 1}
           />
@@ -159,13 +178,13 @@ export default function Home() {
           </div>
         )}
 
-        {currentStep === prompts.length && profile && !isCalculating && (
+        {currentStep === 10 && profile && !isCalculating && (
           <ProfileDisplay profile={profile} onRestart={handleRestart} />
         )}
       </div>
 
       <footer className="p-8 text-center text-xs font-bold uppercase tracking-widest text-black/40">
-        © 2024 Personality Lab • Vector Engine V2.0
+        © 2024 Personality Lab • Adaptive Engine V3.0
       </footer>
     </main>
   );
