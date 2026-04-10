@@ -1,43 +1,64 @@
 "use client";
 
-import React, { useState } from 'react';
-import { prompts, Choice, getProfile, ProfileResult } from '@/app/lib/personality-data';
+import React, { useState, useEffect } from 'react';
+import { prompts, Choice, getProfile, ProfileResult, TraitVector } from '@/app/lib/personality-data';
 import { QuizStep } from '@/components/quiz/QuizStep';
 import { ProfileDisplay } from '@/components/profile/ProfileDisplay';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Sparkles, ArrowRight, Clock, ClipboardList } from 'lucide-react';
+import { ArrowRight, Clock, ClipboardList, BrainCircuit } from 'lucide-react';
+
+const INITIAL_VECTOR: TraitVector = {
+  chaos: 0,
+  logic: 0,
+  emotion: 0,
+  imagination: 0,
+  order: 0,
+};
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<number>(-1); 
-  const [selections, setSelections] = useState<string[]>([]);
+  const [vector, setVector] = useState<TraitVector>(INITIAL_VECTOR);
   const [profile, setProfile] = useState<ProfileResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [engineComment, setEngineComment] = useState<string | null>(null);
 
   const handleStart = () => {
     setCurrentStep(0);
   };
 
   const handleSelect = (choice: Choice) => {
-    const nextSelections = [...selections, choice.trait];
-    setSelections(nextSelections);
+    const nextVector = { ...vector };
+    for (const [key, value] of Object.entries(choice.vector)) {
+      const k = key as keyof TraitVector;
+      nextVector[k] = (nextVector[k] || 0) + (value || 0);
+    }
+    setVector(nextVector);
+
+    // Dynamic feedback logic
+    const currentPrompt = prompts[currentStep];
+    if (currentPrompt.commentary) {
+      setEngineComment(currentPrompt.commentary);
+      setTimeout(() => setEngineComment(null), 2500);
+    }
 
     if (currentStep < prompts.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
       setIsCalculating(true);
       setTimeout(() => {
-        setProfile(getProfile(nextSelections));
+        setProfile(getProfile(nextVector));
         setIsCalculating(false);
         setCurrentStep(prompts.length);
-      }, 2000);
+      }, 2500); // Faked "Processing" time
     }
   };
 
   const handleRestart = () => {
     setCurrentStep(-1);
-    setSelections([]);
+    setVector(INITIAL_VECTOR);
     setProfile(null);
+    setEngineComment(null);
   };
 
   const progress = (currentStep / prompts.length) * 100;
@@ -50,12 +71,19 @@ export default function Home() {
           <Button variant="ghost" size="icon" onClick={handleRestart} className="rounded-full border-2 border-black bg-[#E2F2F0]">
             <ArrowRight className="rotate-180" size={20} />
           </Button>
-          <div className="flex-1 px-8">
+          <div className="flex-1 px-8 relative">
             <Progress value={progress} className="h-3 bg-white border-2 border-black" />
+            {engineComment && (
+              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+                <div className="bg-black text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap">
+                  {engineComment}
+                </div>
+              </div>
+            )}
           </div>
-          <Button disabled className="brutal-button bg-primary text-white rounded-xl px-6">
-            Submit
-          </Button>
+          <div className="w-10 h-10 rounded-full border-2 border-black bg-white flex items-center justify-center">
+            <BrainCircuit size={18} className="animate-pulse text-primary" />
+          </div>
         </div>
       )}
 
@@ -69,35 +97,27 @@ export default function Home() {
 
               <div className="space-y-2">
                 <h1 className="text-3xl font-headline font-bold text-black leading-tight">
-                  Understand your personality
+                  Nuanced Personality Assessment
                 </h1>
-                <p className="text-muted-foreground text-sm italic">Self-assessment</p>
+                <p className="text-muted-foreground text-sm italic">Multi-dimensional Analysis Engine</p>
               </div>
 
               <div className="flex justify-center gap-6 text-sm font-medium">
                 <div className="flex items-center gap-2">
                   <ClipboardList size={18} className="text-orange-400" />
-                  <span>10 Questions</span>
+                  <span>10 Probes</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={18} className="text-teal-400" />
-                  <span>~2 minutes</span>
+                  <span>Vector Scoring</span>
                 </div>
               </div>
 
               <div className="bg-[#E2F2F0] border-2 border-black rounded-3xl p-6 text-left space-y-3">
-                <h3 className="font-bold text-lg">About assessment</h3>
+                <h3 className="font-bold text-lg">The Scoring Engine</h3>
                 <p className="text-sm leading-relaxed text-black/70">
-                  This framework is designed to identify the unique architecture of your subconscious through abstract resonances.
+                  This isn't a simple quiz. We track five dimensions of your psyche—Chaos, Logic, Emotion, Imagination, and Order—to build a unique trait vector.
                 </p>
-              </div>
-
-              <div className="bg-[#FEF4E8] border-2 border-black border-dashed rounded-3xl p-6 text-left space-y-3">
-                <h3 className="font-bold text-lg">Instruction</h3>
-                <ul className="text-sm space-y-2 text-black/70 list-disc list-inside">
-                  <li>There is no right or wrong answer</li>
-                  <li>Choose the answer that feels true to you</li>
-                </ul>
               </div>
 
               <Button 
@@ -105,7 +125,7 @@ export default function Home() {
                 onClick={handleStart}
                 className="w-full brutal-button bg-primary hover:bg-primary/90 text-white rounded-[2rem] h-14 text-lg font-headline font-bold"
               >
-                Start test
+                Initiate Sequence
               </Button>
             </div>
           </div>
@@ -120,11 +140,21 @@ export default function Home() {
         )}
 
         {isCalculating && (
-          <div className="flex flex-col items-center space-y-8 animate-pulse text-center">
-            <div className="w-16 h-16 rounded-full border-4 border-black border-t-primary animate-spin" />
-            <div className="space-y-2">
-              <h3 className="text-2xl font-headline font-bold">Mapping your archetype...</h3>
-              <p className="text-muted-foreground">Synthesizing choices into geometric personality structures.</p>
+          <div className="flex flex-col items-center space-y-8 text-center">
+            <div className="relative">
+               <div className="w-24 h-24 rounded-full border-4 border-dashed border-black animate-spin" />
+               <BrainCircuit className="absolute inset-0 m-auto text-primary" size={32} />
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-2xl font-headline font-bold">Synthesizing Archetype...</h3>
+              <div className="space-y-1">
+                <p className="text-sm font-bold uppercase tracking-widest text-black/40">Calculating Vectors</p>
+                <div className="flex gap-1 justify-center">
+                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-75" />
+                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-150" />
+                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-225" />
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -135,7 +165,7 @@ export default function Home() {
       </div>
 
       <footer className="p-8 text-center text-xs font-bold uppercase tracking-widest text-black/40">
-        © 2024 Personality Lab • Assessment V4
+        © 2024 Personality Lab • Vector Engine V2.0
       </footer>
     </main>
   );
