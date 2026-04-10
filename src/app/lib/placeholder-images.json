@@ -1,0 +1,17 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "mystic-bg",
+      "description": "Deep space nebula abstract background",
+      "imageUrl": "https://picsum.photos/seed/mystic/1920/1080",
+      "imageHint": "space nebula"
+    },
+    {
+      "id": "abstract-geometry",
+      "description": "Abstract geometric shapes with gold accents",
+      "imageUrl": "https://picsum.photos/seed/abstract/800/800",
+      "imageHint": "abstract geometry"
+    }
+  ]
+}
