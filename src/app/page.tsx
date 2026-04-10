@@ -1,16 +1,15 @@
-
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { prompts, Choice, getProfile, ProfileResult } from '@/app/lib/personality-data';
 import { QuizStep } from '@/components/quiz/QuizStep';
 import { ProfileDisplay } from '@/components/profile/ProfileDisplay';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ArrowRight, Clock, ClipboardList } from 'lucide-react';
 
 export default function Home() {
-  const [currentStep, setCurrentStep] = useState<number>(-1); // -1 is landing
+  const [currentStep, setCurrentStep] = useState<number>(-1); 
   const [selections, setSelections] = useState<string[]>([]);
   const [profile, setProfile] = useState<ProfileResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -31,7 +30,7 @@ export default function Home() {
         setProfile(getProfile(nextSelections));
         setIsCalculating(false);
         setCurrentStep(prompts.length);
-      }, 2500); // Simulated "sophisticated backend logic" delay
+      }, 2000);
     }
   };
 
@@ -44,41 +43,71 @@ export default function Home() {
   const progress = (currentStep / prompts.length) * 100;
 
   return (
-    <main className="min-h-screen relative flex flex-col">
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#4839A8]/10 blur-[150px] opacity-40" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#4CB3BF]/10 blur-[150px] opacity-40" />
-      </div>
-
-      {/* Progress Bar (Visible during quiz) */}
-      {currentStep >= 0 && currentStep < prompts.length && !isCalculating && (
-        <div className="fixed top-0 left-0 w-full z-50 p-4">
-          <div className="max-w-4xl mx-auto space-y-2">
-            <Progress value={progress} className="h-1 bg-white/5" />
+    <main className="min-h-screen flex flex-col bg-[#F5F7F9]">
+      {/* Header Area */}
+      {currentStep >= 0 && currentStep < prompts.length && (
+        <div className="w-full max-w-2xl mx-auto p-6 flex items-center justify-between">
+          <Button variant="ghost" size="icon" onClick={handleRestart} className="rounded-full border-2 border-black bg-[#E2F2F0]">
+            <ArrowRight className="rotate-180" size={20} />
+          </Button>
+          <div className="flex-1 px-8">
+            <Progress value={progress} className="h-3 bg-white border-2 border-black" />
           </div>
+          <Button disabled className="brutal-button bg-primary text-white rounded-xl px-6">
+            Submit
+          </Button>
         </div>
       )}
 
-      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12">
+      <div className="flex-1 flex flex-col items-center py-12 px-6">
         {currentStep === -1 && (
-          <div className="max-w-3xl text-center space-y-12 animate-fade-in-up">
-            <div className="space-y-6">
-              <BadgeContainer />
-              <h1 className="text-6xl md:text-8xl font-headline font-bold text-white tracking-tighter leading-[0.9]">
-                Personality in <span className="text-gold">10 Clicks</span>
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
-                A journey through the weird, the abstract, and the ultra-specific. Discover the architecture of your subconscious.
-              </p>
+          <div className="max-w-md w-full space-y-8 animate-fade-in-up">
+            <div className="brutal-card p-10 space-y-8 text-center relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full border-2 border-black bg-white flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-black" />
+              </div>
+
+              <div className="space-y-2">
+                <h1 className="text-3xl font-headline font-bold text-black leading-tight">
+                  Understand your personality
+                </h1>
+                <p className="text-muted-foreground text-sm italic">Self-assessment</p>
+              </div>
+
+              <div className="flex justify-center gap-6 text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <ClipboardList size={18} className="text-orange-400" />
+                  <span>10 Questions</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock size={18} className="text-teal-400" />
+                  <span>~2 minutes</span>
+                </div>
+              </div>
+
+              <div className="bg-[#E2F2F0] border-2 border-black rounded-3xl p-6 text-left space-y-3">
+                <h3 className="font-bold text-lg">About assessment</h3>
+                <p className="text-sm leading-relaxed text-black/70">
+                  This framework is designed to identify the unique architecture of your subconscious through abstract resonances.
+                </p>
+              </div>
+
+              <div className="bg-[#FEF4E8] border-2 border-black border-dashed rounded-3xl p-6 text-left space-y-3">
+                <h3 className="font-bold text-lg">Instruction</h3>
+                <ul className="text-sm space-y-2 text-black/70 list-disc list-inside">
+                  <li>There is no right or wrong answer</li>
+                  <li>Choose the answer that feels true to you</li>
+                </ul>
+              </div>
+
+              <Button 
+                size="lg" 
+                onClick={handleStart}
+                className="w-full brutal-button bg-primary hover:bg-primary/90 text-white rounded-[2rem] h-14 text-lg font-headline font-bold"
+              >
+                Start test
+              </Button>
             </div>
-            <Button 
-              size="lg" 
-              onClick={handleStart}
-              className="bg-primary hover:bg-primary/90 text-white rounded-full px-12 h-16 text-xl font-headline shadow-2xl shadow-primary/20"
-            >
-              Begin Resonance
-            </Button>
           </div>
         )}
 
@@ -91,14 +120,11 @@ export default function Home() {
         )}
 
         {isCalculating && (
-          <div className="flex flex-col items-center space-y-8 animate-pulse">
-            <div className="relative">
-               <div className="w-24 h-24 rounded-full border-t-4 border-primary animate-spin" />
-               <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gold" size={32} />
-            </div>
-            <div className="text-center space-y-2">
-              <h3 className="text-3xl font-headline font-medium text-white">Synthesizing Profile...</h3>
-              <p className="text-muted-foreground font-light">Analyzing abstract choice patterns against 40,000 archetypal variables.</p>
+          <div className="flex flex-col items-center space-y-8 animate-pulse text-center">
+            <div className="w-16 h-16 rounded-full border-4 border-black border-t-primary animate-spin" />
+            <div className="space-y-2">
+              <h3 className="text-2xl font-headline font-bold">Mapping your archetype...</h3>
+              <p className="text-muted-foreground">Synthesizing choices into geometric personality structures.</p>
             </div>
           </div>
         )}
@@ -108,21 +134,9 @@ export default function Home() {
         )}
       </div>
 
-      {/* Aesthetic Footer Branding */}
-      <footer className="p-8 flex items-center justify-between text-xs tracking-widest uppercase text-muted-foreground font-headline border-t border-white/5">
-        <span>© 2024 Abstract Collective</span>
-        <span className="hidden sm:inline">Crafted with introspection</span>
-        <span>Version 4.4.4</span>
+      <footer className="p-8 text-center text-xs font-bold uppercase tracking-widest text-black/40">
+        © 2024 Personality Lab • Assessment V4
       </footer>
     </main>
-  );
-}
-
-function BadgeContainer() {
-  return (
-    <div className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-muted-foreground tracking-widest uppercase font-headline">
-      <Sparkles size={14} className="text-gold" />
-      <span>Advanced Archetypal Engine</span>
-    </div>
   );
 }

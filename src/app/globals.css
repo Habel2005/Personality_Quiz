@@ -4,90 +4,69 @@
 
 @layer base {
   :root {
-    --background: 240 10% 98%;
+    --background: 210 20% 98%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 247 49% 44%;
+    --primary: 305 11% 33%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 187 45% 53%;
+    --secondary: 172 30% 87%;
     --secondary-foreground: 240 10% 3.9%;
     --muted: 240 5% 90%;
     --muted-foreground: 240 5% 45.1%;
-    --accent: 45 88% 70%;
+    --accent: 25 88% 91%;
     --accent-foreground: 240 10% 3.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
+    --border: 0 0% 0%;
     --input: 240 5.9% 90%;
-    --ring: 247 49% 44%;
-    --radius: 0.75rem;
-  }
-  .dark {
-    --background: 240 10% 6%;
-    --foreground: 240 5% 95%;
-    --card: 240 10% 8%;
-    --card-foreground: 240 5% 95%;
-    --popover: 240 10% 8%;
-    --popover-foreground: 240 5% 95%;
-    --primary: 247 49% 55%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 187 45% 40%;
-    --secondary-foreground: 240 5% 95%;
-    --muted: 240 10% 15%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 187 45% 53%;
-    --accent-foreground: 240 10% 6%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 15%;
-    --input: 240 10% 15%;
-    --ring: 247 49% 55%;
+    --ring: 305 11% 33%;
+    --radius: 1.5rem;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-black;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased selection:bg-primary/30;
-    background-color: #1A1A20;
-    color: #F8F8F8;
+    @apply bg-[#F5F7F9] text-foreground font-body antialiased;
+    color: #1A1A20;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline tracking-tight;
   }
 }
 
-.quiz-transition-enter {
-  opacity: 0;
-  transform: translateY(20px);
+.brutal-card {
+  @apply bg-white border-2 border-black rounded-[2.5rem] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all;
 }
-.quiz-transition-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 500ms, transform 500ms;
+
+.brutal-card:hover {
+  @apply translate-x-[2px] translate-y-[2px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)];
 }
-.quiz-transition-exit {
-  opacity: 1;
-  transform: translateY(0);
+
+.brutal-button {
+  @apply border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all;
 }
-.quiz-transition-exit-active {
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 500ms, transform 500ms;
+
+.connector-dot {
+  @apply w-3 h-3 rounded-full border-2 border-black bg-white relative z-10;
+}
+
+.connector-line {
+  @apply w-[2px] bg-black/10 border-l-2 border-dotted border-black h-full absolute left-1/2 -translate-x-1/2;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #F5F7F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #4839A8;
+  background: #000;
   border-radius: 10px;
 }

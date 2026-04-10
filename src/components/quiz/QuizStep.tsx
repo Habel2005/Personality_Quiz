@@ -1,11 +1,10 @@
-
 "use client";
 
 import React from 'react';
 import { Prompt, Choice } from '@/app/lib/personality-data';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import * as Icons from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Check } from 'lucide-react';
 
 interface QuizStepProps {
   prompt: Prompt;
@@ -15,42 +14,40 @@ interface QuizStepProps {
 
 export const QuizStep: React.FC<QuizStepProps> = ({ prompt, onSelect, stepNumber }) => {
   return (
-    <div className="flex flex-col items-center justify-center w-full max-w-4xl mx-auto space-y-12 animate-fade-in-up">
-      <div className="text-center space-y-4">
-        <span className="text-accent font-headline tracking-widest uppercase text-xs">
-          Click {stepNumber} / 10
-        </span>
-        <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#F8F8F8] leading-tight max-w-2xl mx-auto">
-          {prompt.question}
-        </h2>
-      </div>
+    <div className="w-full max-w-lg mx-auto space-y-8 animate-fade-in-up">
+      <div className="relative pb-4">
+        <div className="brutal-card p-10 space-y-8 relative">
+          <div className="absolute -top-4 left-6 w-8 h-8 rounded-full border-2 border-black bg-[#E2F2F0] flex items-center justify-center font-bold">
+            {stepNumber}
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-        {prompt.choices.map((choice) => {
-          // @ts-ignore
-          const IconComponent = Icons[choice.icon] || Icons.Circle;
-          
-          return (
-            <Card 
-              key={choice.id}
-              className="group relative overflow-hidden bg-[#1A1A20] border-border/50 hover:border-primary transition-all duration-500 cursor-pointer p-8 flex flex-col items-center text-center space-y-6"
-              onClick={() => onSelect(choice)}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="p-4 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500">
-                <IconComponent size={32} strokeWidth={1.5} />
-              </div>
-              <p className="text-xl md:text-2xl font-medium leading-relaxed group-hover:text-white transition-colors">
-                {choice.text}
-              </p>
-              <div className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white rounded-full px-8">
-                  Select
-                </Button>
-              </div>
-            </Card>
-          );
-        })}
+          <h2 className="text-2xl font-headline font-bold text-black leading-tight pt-2">
+            {prompt.question}
+          </h2>
+
+          <div className="space-y-4">
+            {prompt.choices.map((choice, index) => (
+              <button
+                key={choice.id}
+                onClick={() => onSelect(choice)}
+                className={cn(
+                  "w-full p-6 text-left border-2 border-black rounded-[1.5rem] flex items-center justify-between transition-all group",
+                  "hover:bg-[#F5F7F9] hover:translate-x-1 hover:translate-y-1"
+                )}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl border-2 border-black bg-white flex items-center justify-center font-bold group-hover:bg-[#E2F2F0]">
+                    {String.fromCharCode(65 + index)}
+                  </div>
+                  <span className="font-medium text-lg text-black/80">{choice.text}</span>
+                </div>
+                <div className="w-6 h-6 rounded-full border-2 border-black bg-white group-hover:bg-[#C1E57A] flex items-center justify-center">
+                  <Check size={14} className="opacity-0 group-hover:opacity-100" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

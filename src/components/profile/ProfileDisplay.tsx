@@ -1,12 +1,9 @@
-
 "use client";
 
 import React from 'react';
 import { ProfileResult } from '@/app/lib/personality-data';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Share2, RefreshCcw, Download } from 'lucide-react';
+import { RefreshCcw, Share2, User } from 'lucide-react';
 
 interface ProfileDisplayProps {
   profile: ProfileResult;
@@ -15,49 +12,95 @@ interface ProfileDisplayProps {
 
 export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onRestart }) => {
   return (
-    <div className="max-w-4xl mx-auto space-y-12 animate-fade-in-up py-12">
-      <header className="text-center space-y-6">
-        <Badge variant="outline" className="border-gold text-gold font-headline uppercase tracking-widest py-1 px-4">
-          {profile.archetype}
-        </Badge>
-        <h1 className="text-5xl md:text-7xl font-headline font-bold text-white tracking-tight">
-          {profile.title}
-        </h1>
-        <p className="text-xl md:text-2xl text-muted-foreground font-light leading-relaxed max-w-3xl mx-auto">
-          {profile.description}
-        </p>
-      </header>
+    <div className="max-w-md w-full space-y-6 animate-fade-in-up pb-12">
+      <div className="text-center pb-4">
+        <h2 className="text-xl font-headline font-bold uppercase tracking-widest text-black/40">Test Results</h2>
+      </div>
 
-      <div className="bg-[#24242C] border border-border/50 rounded-2xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-3xl -z-10" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 blur-3xl -z-10" />
-        
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {profile.traits.map((trait) => (
-            <div key={trait} className="px-6 py-3 rounded-full bg-primary/20 border border-primary/30 text-primary-foreground font-headline font-medium text-lg">
+      {/* Main Identity Card */}
+      <div className="brutal-card overflow-hidden relative">
+         <div className="p-8 space-y-6 text-center">
+            <div className="flex justify-center">
+              <div className="w-20 h-20 rounded-[1.5rem] border-2 border-black bg-[#E2F2F0] flex items-center justify-center">
+                <User size={40} />
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold">Individual Archetype</h3>
+              <p className="text-sm text-muted-foreground uppercase tracking-widest">{profile.archetype}</p>
+            </div>
+
+            <div className="bg-[#FEF4E8] border-y-2 border-dashed border-black py-6 -mx-8 px-8">
+              <h2 className="text-2xl font-headline font-bold text-primary">{profile.title}</h2>
+              <p className="text-xs text-muted-foreground mt-1">Profile ID: AR-CH-{Math.floor(Math.random() * 9000) + 1000}</p>
+            </div>
+
+            <p className="text-sm leading-relaxed text-black/70 italic">
+              "{profile.description}"
+            </p>
+         </div>
+      </div>
+
+      {/* Connection Rings */}
+      <div className="flex justify-center h-8 relative">
+        <div className="w-[2px] bg-black border-l-2 border-dotted h-full" />
+        <div className="absolute -top-1 w-3 h-3 rounded-full border-2 border-black bg-white" />
+        <div className="absolute -bottom-1 w-3 h-3 rounded-full border-2 border-black bg-white" />
+      </div>
+
+      {/* Traits Section */}
+      <div className="brutal-card p-8 space-y-6">
+        <div className="flex items-center gap-4">
+           <div className="relative w-16 h-16">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="transparent"
+                  className="text-[#F5F7F9]"
+                />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="transparent"
+                  strokeDasharray={175}
+                  strokeDashoffset={175 * (1 - 0.79)}
+                  className="text-primary"
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold">79%</span>
+           </div>
+           <div>
+              <h4 className="font-bold">Core Resonance</h4>
+              <p className="text-xs text-muted-foreground">Alignment with archetypal traits</p>
+           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {profile.traits.map(trait => (
+            <div key={trait} className="px-4 py-2 rounded-xl border-2 border-black bg-white text-xs font-bold uppercase">
               {trait}
             </div>
           ))}
         </div>
-
-        <Separator className="bg-border/30 mb-12" />
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-10 h-14 text-lg">
-            <Share2 className="mr-2" /> Share Result
-          </Button>
-          <Button variant="outline" size="lg" className="border-border hover:bg-white/5 rounded-full px-10 h-14 text-lg text-white">
-            <Download className="mr-2" /> Download Profile
-          </Button>
-          <Button variant="ghost" size="lg" onClick={onRestart} className="hover:bg-white/5 text-muted-foreground rounded-full px-10 h-14 text-lg">
-            <RefreshCcw className="mr-2" /> Restart
-          </Button>
-        </div>
       </div>
-      
-      <footer className="text-center pt-8 text-muted-foreground text-sm font-light">
-        Meticulously calculated based on your abstract resonances.
-      </footer>
+
+      {/* Actions */}
+      <div className="pt-8 space-y-4">
+        <Button size="lg" className="w-full brutal-button bg-primary text-white rounded-[2rem] h-14 font-bold">
+          <Share2 className="mr-2" size={18} /> Share Test Result
+        </Button>
+        <Button variant="ghost" onClick={onRestart} className="w-full text-black/60 font-bold hover:bg-black/5">
+          <RefreshCcw className="mr-2" size={16} /> Restart Assessment
+        </Button>
+      </div>
     </div>
   );
 };
