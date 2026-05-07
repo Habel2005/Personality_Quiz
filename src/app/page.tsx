@@ -116,26 +116,26 @@ export default function Home() {
 
               <div className="space-y-2">
                 <h1 className="text-3xl font-headline font-bold text-black leading-tight">
-                  Adaptive Personality Engine
+                  The 10-Click Vibe Check
                 </h1>
-                <p className="text-muted-foreground text-sm italic">Entropy-Reducing Neural Analysis</p>
+                <p className="text-muted-foreground text-sm italic">Highly accurate. Mildly calling you out.</p>
               </div>
 
               <div className="flex justify-center gap-6 text-sm font-medium">
                 <div className="flex items-center gap-2">
                   <ClipboardList size={18} className="text-orange-400" />
-                  <span>10 Probes</span>
+                  <span>10 Questions</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={18} className="text-teal-400" />
-                  <span>Adaptive Flow</span>
+                  <span>Adapts to You</span>
                 </div>
               </div>
 
               <div className="bg-[#E2F2F0] border-2 border-black rounded-3xl p-6 text-left space-y-3">
-                <h3 className="font-bold text-lg">The Adaptive Logic</h3>
+                <h3 className="font-bold text-lg">Wait, how does this work?</h3>
                 <p className="text-sm leading-relaxed text-black/70">
-                  This engine doesn't follow a fixed path. It actively analyzes your choices to select the next most informative probe, pinpointing your psychological center in exactly 10 clicks.
+                  This isn't a normal quiz where everyone gets the same questions. Every time you click, the engine actively changes the next question to aggressively narrow down exactly what kind of person you are.
                 </p>
               </div>
 
@@ -144,7 +144,7 @@ export default function Home() {
                 onClick={handleStart}
                 className="w-full brutal-button bg-primary hover:bg-primary/90 text-white rounded-[2rem] h-14 text-lg font-headline font-bold"
               >
-                Initiate Sequence
+                Start the Quiz
               </Button>
             </div>
           </div>
@@ -165,9 +165,9 @@ export default function Home() {
                <BrainCircuit className="absolute inset-0 m-auto text-primary" size={32} />
             </div>
             <div className="space-y-4">
-              <h3 className="text-2xl font-headline font-bold">Synthesizing Archetype...</h3>
+              <h3 className="text-2xl font-headline font-bold">Analyzing your choices...</h3>
               <div className="space-y-1">
-                <p className="text-sm font-bold uppercase tracking-widest text-black/40">Calculating Vectors</p>
+                <p className="text-sm font-bold uppercase tracking-widest text-black/40">Connecting the dots</p>
                 <div className="flex gap-1 justify-center">
                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-75" />
                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-150" />
@@ -184,7 +184,7 @@ export default function Home() {
       </div>
 
       <footer className="p-8 text-center text-xs font-bold uppercase tracking-widest text-black/40">
-        © 2024 Personality Lab • Adaptive Engine V3.0
+        © 2026 Personality Lab • Vibe Engine V3.0 @HabelShaji
       </footer>
     </main>
   );
