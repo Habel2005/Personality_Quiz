@@ -4,7 +4,7 @@
 import React from 'react';
 import { ProfileResult, encodeVector } from '@/app/lib/personality-data';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, Share2, Info, AlertTriangle, Fingerprint, Trophy, History, Copy } from 'lucide-react';
+import { RefreshCcw, Share2, Info, AlertTriangle, Fingerprint, Trophy, History } from 'lucide-react';
 import { getEarnedBadges } from '@/app/lib/achievements';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -49,12 +49,12 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
         console.error('Error sharing:', err);
       }
     } else {
-      // Fallback to clipboard
+      // Fallback: Copy ONLY the URL to ensure it's clean when pasted
       try {
         await navigator.clipboard.writeText(shareUrl);
         toast({
           title: "Link Copied!",
-          description: "Shareable Neural ID link copied to clipboard.",
+          description: "Clean shareable link copied to clipboard.",
         });
       } catch (err) {
         toast({
@@ -72,7 +72,6 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
         <h2 className="text-xl font-headline font-bold uppercase tracking-widest text-black/40">Vibe Map: Complete</h2>
       </div>
 
-      {/* Main Identity Card */}
       <div className="brutal-card overflow-hidden relative">
          <div className="h-4 w-full bg-primary" />
          <div className="p-8 space-y-6 text-center">
@@ -91,7 +90,7 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
               <h2 className="text-2xl font-headline font-bold text-primary">{profile.title}</h2>
               <div className="flex items-center justify-center gap-2 mt-2">
                  <span className="text-[10px] font-bold uppercase bg-white px-2 py-0.5 border border-black rounded">
-                   Logic Confidence: {Math.round(profile.confidence * 100)}%
+                   Confidence: {Math.round(profile.confidence * 100)}%
                  </span>
                  {profile.isContradictory && (
                    <span className="text-[10px] font-bold uppercase bg-orange-100 px-2 py-0.5 border border-black rounded flex items-center gap-1">
@@ -107,7 +106,6 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
          </div>
       </div>
 
-      {/* Digital Badges / Achievements */}
       {badges.length > 0 && (
         <div className="brutal-card p-6 bg-white space-y-4">
           <h4 className="font-bold flex items-center gap-2 text-xs uppercase tracking-widest text-black/40">
@@ -124,7 +122,6 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
         </div>
       )}
 
-      {/* Radar Chart Visual */}
       <div className="brutal-card p-6 space-y-4 bg-white">
         <h4 className="font-bold flex items-center gap-2 text-xs uppercase tracking-widest text-black/40">
            <Info size={14} /> Neural Breakdown
@@ -146,7 +143,6 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
         </div>
       </div>
 
-      {/* History Log */}
       {history.length > 0 && (
         <div className="brutal-card p-6 space-y-4 bg-[#E2F2F0]">
           <h4 className="font-bold flex items-center gap-2 text-xs uppercase tracking-widest text-black/40">
@@ -170,7 +166,6 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
         </div>
       )}
 
-      {/* Actions */}
       <div className="pt-8 space-y-4">
         <Button 
           size="lg" 

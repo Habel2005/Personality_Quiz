@@ -436,7 +436,9 @@ export const encodeVector = (vector: TraitVector): string => {
  */
 export const decodeVector = (encoded: string): TraitVector | null => {
   try {
-    return JSON.parse(atob(encoded));
+    // Only take the base64 part, stripping any extra text if someone pasted text alongside the link
+    const cleanEncoded = encoded.split(/[ \n\r\t]/)[0];
+    return JSON.parse(atob(cleanEncoded));
   } catch (e) {
     return null;
   }
