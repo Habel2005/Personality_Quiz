@@ -16,7 +16,7 @@ import { QuizStep } from '@/components/quiz/QuizStep';
 import { ProfileDisplay } from '@/components/profile/ProfileDisplay';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Clock, ClipboardList, BrainCircuit } from 'lucide-react';
+import { ArrowRight, Clock, ClipboardList, BrainCircuit, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 
 const INITIAL_VECTOR: TraitVector = {
   chaos: 0,
@@ -26,8 +26,33 @@ const INITIAL_VECTOR: TraitVector = {
   order: 0,
 };
 
+const INTRO_SLIDES = [
+  {
+    title: "The 10-Click Vibe Check",
+    subtitle: "Highly accurate. Mildly calling you out.",
+    desc: "A personality mapping engine designed to reveal who you are when you aren't trying to impress anyone.",
+    icon: <Sparkles className="text-orange-400" />,
+    color: "bg-white"
+  },
+  {
+    title: "Adaptive Entropic Probing",
+    subtitle: "This isn't a static quiz.",
+    desc: "Every click changes the next question. The engine aggressively narrows down your neural trajectory in real-time.",
+    icon: <Zap className="text-teal-400" />,
+    color: "bg-[#E2F2F0]"
+  },
+  {
+    title: "Privacy First Engine",
+    subtitle: "Zero Cloud. Zero AI. Pure Logic.",
+    desc: "Calculated locally in your browser. No data leaves this device. We just map the frequencies and present the truth.",
+    icon: <ShieldCheck className="text-primary" />,
+    color: "bg-[#FEF4E8]"
+  }
+];
+
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<number>(-1); 
+  const [introIndex, setIntroIndex] = useState(0);
   const [vector, setVector] = useState<TraitVector>(INITIAL_VECTOR);
   const [profile, setProfile] = useState<ProfileResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -40,6 +65,16 @@ export default function Home() {
     const saved = localStorage.getItem('vibe_history');
     if (saved) setHistory(JSON.parse(saved));
   }, []);
+
+  // Auto-cycle intro slides every 4 seconds when on landing page
+  useEffect(() => {
+    if (currentStep === -1) {
+      const timer = setInterval(() => {
+        setIntroIndex((prev) => (prev + 1) % INTRO_SLIDES.length);
+      }, 4500);
+      return () => clearInterval(timer);
+    }
+  }, [currentStep]);
 
   const handleStart = () => {
     const firstQuestion = getNextQuestion(INITIAL_VECTOR, [], prompts);
@@ -71,11 +106,10 @@ export default function Home() {
       setIsCalculating(true);
       const finalProfile = getProfile(nextVector);
       
-      // Save to history (Local Database)
       const newHistory = [
         { ...finalProfile, date: new Date().toISOString() },
         ...history
-      ].slice(0, 5); // Keep last 5
+      ].slice(0, 5);
       localStorage.setItem('vibe_history', JSON.stringify(newHistory));
       setHistory(newHistory);
 
@@ -83,12 +117,13 @@ export default function Home() {
         setProfile(finalProfile);
         setIsCalculating(false);
         setCurrentStep(10);
-      }, 2000);
+      }, 2500);
     }
   };
 
   const handleRestart = () => {
     setCurrentStep(-1);
+    setIntroIndex(0);
     setVector(INITIAL_VECTOR);
     setProfile(null);
     setEngineComment(null);
@@ -101,7 +136,7 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col bg-[#F5F7F9]">
       {currentStep >= 0 && currentStep < 10 && (
-        <div className="w-full max-w-2xl mx-auto p-6 flex items-center justify-between">
+        <div className="w-full max-w-2xl mx-auto p-6 flex items-center justify-between animate-fade-in-up">
           <Button variant="ghost" size="icon" onClick={handleRestart} className="rounded-full border-2 border-black bg-[#E2F2F0]">
             <ArrowRight className="rotate-180" size={20} />
           </Button>
@@ -123,54 +158,73 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col items-center py-12 px-6">
         {currentStep === -1 && (
-          <div className="max-w-md w-full space-y-8 animate-fade-in-up">
-            <div className="brutal-card p-10 space-y-8 text-center relative">
+          <div className="max-w-md w-full space-y-8">
+            <div className="brutal-card p-10 space-y-8 text-center relative overflow-hidden transition-colors duration-500">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full border-2 border-black bg-white flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-black" />
               </div>
 
-              <div className="space-y-2">
-                <h1 className="text-3xl font-headline font-bold text-black leading-tight">
-                  The Vibe Engine
-                </h1>
-                <p className="text-muted-foreground text-sm italic">Direct. Honest. Logic-driven.</p>
+              {/* Dynamic Intro Slides */}
+              <div className="min-h-[220px] flex flex-col justify-center space-y-6">
+                {INTRO_SLIDES.map((slide, i) => (
+                  <div 
+                    key={i} 
+                    className={cn(
+                      "transition-all duration-700 absolute inset-x-0 p-10 flex flex-col items-center space-y-6",
+                      introIndex === i ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+                    )}
+                  >
+                    <div className="w-14 h-14 rounded-2xl border-2 border-black bg-white flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                      {slide.icon}
+                    </div>
+                    <div className="space-y-2">
+                      <h1 className="text-3xl font-headline font-bold text-black leading-tight">
+                        {slide.title}
+                      </h1>
+                      <p className="text-primary text-xs font-bold uppercase tracking-widest">{slide.subtitle}</p>
+                    </div>
+                    <div className={cn("border-2 border-black rounded-3xl p-6 text-left transition-colors duration-500", slide.color)}>
+                      <p className="text-sm leading-relaxed text-black/70 font-medium">
+                        {slide.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              <div className="flex justify-center gap-6 text-sm font-medium">
-                <div className="flex items-center gap-2">
-                  <ClipboardList size={18} className="text-orange-400" />
-                  <span>10 Probes</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={18} className="text-teal-400" />
-                  <span>Adaptive Flow</span>
-                </div>
-              </div>
-
-              <div className="bg-[#E2F2F0] border-2 border-black rounded-3xl p-6 text-left space-y-3">
-                <h3 className="font-bold text-lg">No Cloud AI.</h3>
-                <p className="text-sm leading-relaxed text-black/70">
-                  This engine calculates your neural vector locally. Your data stays in your browser. We just map the frequencies.
-                </p>
+              {/* Pagination Dots */}
+              <div className="flex justify-center gap-2 pt-4">
+                {INTRO_SLIDES.map((_, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => setIntroIndex(i)}
+                    className={cn(
+                      "w-2.5 h-2.5 rounded-full border border-black transition-all",
+                      introIndex === i ? "bg-black w-6" : "bg-white"
+                    )}
+                  />
+                ))}
               </div>
 
               <Button 
                 size="lg" 
                 onClick={handleStart}
-                className="w-full brutal-button bg-primary hover:bg-primary/90 text-white rounded-[2rem] h-14 text-lg font-headline font-bold"
+                className="w-full brutal-button bg-primary hover:bg-primary/90 text-white rounded-[2rem] h-14 text-lg font-headline font-bold mt-4"
               >
-                Sync Frequencies
+                Sync Neural Map
               </Button>
             </div>
 
             {history.length > 0 && (
-              <div className="brutal-card p-6 bg-white space-y-4">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-black/40">Neural History</h4>
+              <div className="brutal-card p-6 bg-white space-y-4 animate-fade-in-up">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-black/40 flex items-center gap-2">
+                  <BrainCircuit size={14} /> Neural History
+                </h4>
                 <div className="space-y-2">
                   {history.map((h, i) => (
-                    <div key={i} className="flex justify-between items-center text-sm border-b border-black/5 pb-2">
-                      <span className="font-bold">{h.archetype}</span>
-                      <span className="text-xs text-black/40">{new Date(h.date).toLocaleDateString()}</span>
+                    <div key={i} className="flex justify-between items-center text-xs border-b border-black/5 pb-2">
+                      <span className="font-bold text-black/70">{h.archetype}</span>
+                      <span className="text-[10px] text-black/30">{new Date(h.date).toLocaleDateString()}</span>
                     </div>
                   ))}
                 </div>
@@ -188,14 +242,21 @@ export default function Home() {
         )}
 
         {isCalculating && (
-          <div className="flex flex-col items-center space-y-8 text-center">
+          <div className="flex flex-col items-center space-y-8 text-center animate-pulse">
             <div className="relative">
                <div className="w-24 h-24 rounded-full border-4 border-dashed border-black animate-spin" />
                <BrainCircuit className="absolute inset-0 m-auto text-primary" size={32} />
             </div>
             <div className="space-y-4">
-              <h3 className="text-2xl font-headline font-bold">Compiling neural map...</h3>
-              <p className="text-sm font-bold uppercase tracking-widest text-black/40">Logic engine processing...</p>
+              <h3 className="text-2xl font-headline font-bold">Mapping Neural Vectors...</h3>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-black/40">Analyzing contradiction clusters</p>
+                <div className="flex gap-1 justify-center">
+                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-75" />
+                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-150" />
+                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-225" />
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -206,8 +267,12 @@ export default function Home() {
       </div>
 
       <footer className="p-8 text-center text-xs font-bold uppercase tracking-widest text-black/40">
-        © 2026 Personality Lab • Offline Core V5.0
+        © 2026 Personality Lab • Vibe Engine V5.0 @HabelShaji
       </footer>
     </main>
   );
+}
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }
