@@ -423,3 +423,21 @@ export const getProfile = (finalVector: TraitVector): ProfileResult => {
     isContradictory
   };
 };
+
+/**
+ * Encodes a TraitVector into a Base64 string for URL sharing.
+ */
+export const encodeVector = (vector: TraitVector): string => {
+  return btoa(JSON.stringify(vector));
+};
+
+/**
+ * Decodes a Base64 string back into a TraitVector.
+ */
+export const decodeVector = (encoded: string): TraitVector | null => {
+  try {
+    return JSON.parse(atob(encoded));
+  } catch (e) {
+    return null;
+  }
+};

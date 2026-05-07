@@ -10,13 +10,14 @@ import {
   TraitVector, 
   Prompt, 
   getNextQuestion, 
-  generateCommentary 
+  generateCommentary,
+  decodeVector
 } from '@/app/lib/personality-data';
 import { QuizStep } from '@/components/quiz/QuizStep';
 import { ProfileDisplay } from '@/components/profile/ProfileDisplay';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Clock, ClipboardList, BrainCircuit, Sparkles, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowRight, BrainCircuit, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 
 const INITIAL_VECTOR: TraitVector = {
   chaos: 0,
@@ -61,12 +62,23 @@ export default function Home() {
   const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
   const [history, setHistory] = useState<any[]>([]);
 
+  // Check for shared profile on mount
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedId = params.get('vibe');
+    if (sharedId) {
+      const decoded = decodeVector(sharedId);
+      if (decoded) {
+        setProfile(getProfile(decoded));
+        setCurrentStep(10);
+      }
+    }
+
     const saved = localStorage.getItem('vibe_history');
     if (saved) setHistory(JSON.parse(saved));
   }, []);
 
-  // Auto-cycle intro slides every 4 seconds when on landing page
+  // Auto-cycle intro slides
   useEffect(() => {
     if (currentStep === -1) {
       const timer = setInterval(() => {
@@ -122,6 +134,10 @@ export default function Home() {
   };
 
   const handleRestart = () => {
+    // Clear URL params if shared
+    if (window.location.search) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
     setCurrentStep(-1);
     setIntroIndex(0);
     setVector(INITIAL_VECTOR);
@@ -164,7 +180,6 @@ export default function Home() {
                 <div className="w-2 h-2 rounded-full bg-black" />
               </div>
 
-              {/* Dynamic Intro Slides */}
               <div className="min-h-[220px] flex flex-col justify-center space-y-6">
                 {INTRO_SLIDES.map((slide, i) => (
                   <div 
@@ -192,7 +207,6 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Pagination Dots */}
               <div className="flex justify-center gap-2 pt-4">
                 {INTRO_SLIDES.map((_, i) => (
                   <button 

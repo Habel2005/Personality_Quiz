@@ -2,10 +2,11 @@
 "use client";
 
 import React from 'react';
-import { ProfileResult } from '@/app/lib/personality-data';
+import { ProfileResult, encodeVector } from '@/app/lib/personality-data';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, Share2, Info, AlertTriangle, Fingerprint, Trophy, History } from 'lucide-react';
+import { RefreshCcw, Share2, Info, AlertTriangle, Fingerprint, Trophy, History, Copy } from 'lucide-react';
 import { getEarnedBadges } from '@/app/lib/achievements';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Radar, 
   RadarChart, 
@@ -21,6 +22,7 @@ interface ProfileDisplayProps {
 }
 
 export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onRestart, history }) => {
+  const { toast } = useToast();
   const badges = getEarnedBadges(profile.vector);
   
   const chartData = [
@@ -30,6 +32,39 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
     { subject: 'Imagination', A: profile.vector.imagination, fullMark: 20 },
     { subject: 'Order', A: profile.vector.order, fullMark: 20 },
   ];
+
+  const handleShare = async () => {
+    const encoded = encodeVector(profile.vector);
+    const shareUrl = `${window.location.origin}${window.location.pathname}?vibe=${encoded}`;
+    const shareText = `My Neural Archetype is ${profile.archetype}: ${profile.title}. Check your vibe here!`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Personality Vibe Check',
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link Copied!",
+          description: "Shareable Neural ID link copied to clipboard.",
+        });
+      } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Share Failed",
+          description: "Could not copy link to clipboard.",
+        });
+      }
+    }
+  };
 
   return (
     <div className="max-w-md w-full space-y-6 animate-fade-in-up pb-12">
@@ -112,30 +147,36 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
       </div>
 
       {/* History Log */}
-      <div className="brutal-card p-6 space-y-4 bg-[#E2F2F0]">
-        <h4 className="font-bold flex items-center gap-2 text-xs uppercase tracking-widest text-black/40">
-           <History size={14} /> Vibe Evolution
-        </h4>
-        <div className="space-y-3">
-          {history.map((h, i) => (
-            <div key={i} className="flex justify-between items-center bg-white/50 p-2 rounded-lg border border-black/10">
-              <div>
-                <p className="text-[10px] font-bold uppercase">{h.archetype}</p>
-                <p className="text-[9px] text-black/40">{new Date(h.date).toLocaleDateString()}</p>
+      {history.length > 0 && (
+        <div className="brutal-card p-6 space-y-4 bg-[#E2F2F0]">
+          <h4 className="font-bold flex items-center gap-2 text-xs uppercase tracking-widest text-black/40">
+            <History size={14} /> Vibe Evolution
+          </h4>
+          <div className="space-y-3">
+            {history.map((h, i) => (
+              <div key={i} className="flex justify-between items-center bg-white/50 p-2 rounded-lg border border-black/10">
+                <div>
+                  <p className="text-[10px] font-bold uppercase">{h.archetype}</p>
+                  <p className="text-[9px] text-black/40">{new Date(h.date).toLocaleDateString()}</p>
+                </div>
+                <div className="flex gap-1">
+                  {h.traits.slice(0, 2).map((t: string) => (
+                    <span key={t} className="text-[8px] bg-black text-white px-1 rounded">{t}</span>
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-1">
-                {h.traits.slice(0, 2).map((t: string) => (
-                  <span key={t} className="text-[8px] bg-black text-white px-1 rounded">{t}</span>
-                ))}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Actions */}
       <div className="pt-8 space-y-4">
-        <Button size="lg" className="w-full brutal-button bg-primary text-white rounded-[2rem] h-14 font-bold">
+        <Button 
+          size="lg" 
+          onClick={handleShare}
+          className="w-full brutal-button bg-primary text-white rounded-[2rem] h-14 font-bold"
+        >
           <Share2 className="mr-2" size={18} /> Export Neural ID
         </Button>
         <Button variant="ghost" onClick={onRestart} className="w-full text-black/60 font-bold hover:bg-black/5">
