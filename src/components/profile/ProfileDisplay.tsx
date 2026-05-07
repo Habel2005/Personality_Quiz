@@ -1,33 +1,64 @@
+
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProfileResult } from '@/app/lib/personality-data';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, Share2, User, Info, AlertTriangle } from 'lucide-react';
+import { RefreshCcw, Share2, Sparkles, Info, AlertTriangle, Fingerprint, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { VibeAnalysisOutput } from '@/ai/flows/vibe-analysis-flow';
+import { generateVibePortrait } from '@/ai/flows/vibe-portrait-flow';
+import Image from 'next/image';
 
 interface ProfileDisplayProps {
   profile: ProfileResult;
   onRestart: () => void;
+  aiAnalysis: VibeAnalysisOutput | null;
 }
 
-export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onRestart }) => {
+export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onRestart, aiAnalysis }) => {
+  const [portraitUrl, setPortraitUrl] = useState<string | null>(null);
+  const [isGeneratingPortrait, setIsGeneratingPortrait] = useState(false);
+
+  const handleGeneratePortrait = async () => {
+    setIsGeneratingPortrait(true);
+    try {
+      const res = await generateVibePortrait({
+        archetype: profile.archetype,
+        traits: profile.traits,
+      });
+      setPortraitUrl(res.imageUrl);
+    } catch (error) {
+      console.error("Portrait generation failed", error);
+    } finally {
+      setIsGeneratingPortrait(false);
+    }
+  };
+
   return (
     <div className="max-w-md w-full space-y-6 animate-fade-in-up pb-12">
       <div className="text-center pb-4">
-        <h2 className="text-xl font-headline font-bold uppercase tracking-widest text-black/40">Neural Map Results</h2>
+        <h2 className="text-xl font-headline font-bold uppercase tracking-widest text-black/40">Vibe Check Results</h2>
       </div>
 
       {/* Main Identity Card */}
       <div className="brutal-card overflow-hidden relative">
-         <div className="p-8 space-y-6 text-center">
+         <div 
+           className="h-20 w-full" 
+           style={{ background: aiAnalysis?.vibeColor || 'linear-gradient(45deg, #E2F2F0, #FEF4E8)' }}
+         />
+         <div className="p-8 space-y-6 text-center -mt-10">
             <div className="flex justify-center">
-              <div className="w-20 h-20 rounded-[1.5rem] border-2 border-black bg-[#E2F2F0] flex items-center justify-center">
-                <User size={40} />
+              <div className="w-24 h-24 rounded-[1.5rem] border-2 border-black bg-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                {portraitUrl ? (
+                  <Image src={portraitUrl} alt="Vibe Portrait" width={96} height={96} className="object-cover" />
+                ) : (
+                  <Fingerprint size={40} className="text-primary" />
+                )}
               </div>
             </div>
             
             <div className="space-y-1">
-              <h3 className="text-lg font-bold">Primary Resonance</h3>
+              <h3 className="text-lg font-bold">Neural Archetype</h3>
               <p className="text-sm text-muted-foreground uppercase tracking-widest">{profile.archetype}</p>
             </div>
 
@@ -51,11 +82,44 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
          </div>
       </div>
 
+      {/* AI Analysis Feature */}
+      <div className="brutal-card p-8 bg-[#E2F2F0] space-y-4">
+        <h4 className="font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
+          <Sparkles size={16} className="text-primary" /> The Realness
+        </h4>
+        {aiAnalysis ? (
+          <p className="text-sm font-medium leading-relaxed italic text-black/80">
+            "{aiAnalysis.analysis}"
+          </p>
+        ) : (
+          <div className="space-y-2 animate-pulse">
+            <div className="h-4 bg-black/5 rounded w-full" />
+            <div className="h-4 bg-black/5 rounded w-3/4" />
+          </div>
+        )}
+      </div>
+
+      {/* Portrait Generator Feature */}
+      {!portraitUrl && (
+        <Button 
+          onClick={handleGeneratePortrait} 
+          disabled={isGeneratingPortrait}
+          className="w-full brutal-button bg-white text-black rounded-[2rem] h-14 font-bold border-2 border-black"
+        >
+          {isGeneratingPortrait ? (
+            <Loader2 className="mr-2 animate-spin" size={18} />
+          ) : (
+            <ImageIcon className="mr-2" size={18} />
+          )}
+          Generate Vibe Portrait
+        </Button>
+      )}
+
       {/* Vector Statistics */}
       <div className="brutal-card p-8 space-y-6">
         <div className="flex items-center justify-between">
            <h4 className="font-bold flex items-center gap-2">
-             <Info size={16} /> Trait Distribution
+             <Info size={16} /> Neural Breakdown
            </h4>
         </div>
 
@@ -77,22 +141,13 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onResta
         </div>
       </div>
 
-      {/* Traits Summary */}
-      <div className="flex flex-wrap gap-2 justify-center">
-        {profile.traits.map(trait => (
-          <div key={trait} className="px-4 py-2 rounded-xl border-2 border-black bg-white text-xs font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            {trait}
-          </div>
-        ))}
-      </div>
-
       {/* Actions */}
       <div className="pt-8 space-y-4">
         <Button size="lg" className="w-full brutal-button bg-primary text-white rounded-[2rem] h-14 font-bold">
-          <Share2 className="mr-2" size={18} /> Export Profile Data
+          <Share2 className="mr-2" size={18} /> Export Neural ID
         </Button>
         <Button variant="ghost" onClick={onRestart} className="w-full text-black/60 font-bold hover:bg-black/5">
-          <RefreshCcw className="mr-2" size={16} /> Re-Calculate Vector
+          <RefreshCcw className="mr-2" size={16} /> Re-Sync Frequencies
         </Button>
       </div>
     </div>

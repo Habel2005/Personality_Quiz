@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -16,6 +17,7 @@ import { ProfileDisplay } from '@/components/profile/ProfileDisplay';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Clock, ClipboardList, BrainCircuit } from 'lucide-react';
+import { analyzeVibe, VibeAnalysisOutput } from '@/ai/flows/vibe-analysis-flow';
 
 const INITIAL_VECTOR: TraitVector = {
   chaos: 0,
@@ -33,6 +35,7 @@ export default function Home() {
   const [engineComment, setEngineComment] = useState<string | null>(null);
   const [askedIds, setAskedIds] = useState<number[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<VibeAnalysisOutput | null>(null);
 
   const handleStart = () => {
     const firstQuestion = getNextQuestion(INITIAL_VECTOR, [], prompts);
@@ -49,22 +52,29 @@ export default function Home() {
     }
     setVector(nextVector);
 
-    // Adaptive Commentary Logic
     const dynamicComment = generateCommentary(nextVector, currentStep + 1);
     if (dynamicComment) {
       setEngineComment(dynamicComment);
       setTimeout(() => setEngineComment(null), 2500);
     }
 
-    if (currentStep < 9) { // 10 question limit
+    if (currentStep < 9) { 
       const nextQ = getNextQuestion(nextVector, askedIds, prompts);
       setCurrentPrompt(nextQ);
       setAskedIds(prev => [...prev, nextQ.id]);
       setCurrentStep(currentStep + 1);
     } else {
       setIsCalculating(true);
+      const finalProfile = getProfile(nextVector);
+      
+      analyzeVibe({
+        traits: finalProfile.traits,
+        archetype: finalProfile.archetype,
+        vector: finalProfile.vector as any
+      }).then(res => setAiAnalysis(res));
+
       setTimeout(() => {
-        setProfile(getProfile(nextVector));
+        setProfile(finalProfile);
         setIsCalculating(false);
         setCurrentStep(10);
       }, 2500);
@@ -78,13 +88,13 @@ export default function Home() {
     setEngineComment(null);
     setAskedIds([]);
     setCurrentPrompt(null);
+    setAiAnalysis(null);
   };
 
   const progress = (currentStep / 10) * 100;
 
   return (
     <main className="min-h-screen flex flex-col bg-[#F5F7F9]">
-      {/* Header Area */}
       {currentStep >= 0 && currentStep < 10 && (
         <div className="w-full max-w-2xl mx-auto p-6 flex items-center justify-between">
           <Button variant="ghost" size="icon" onClick={handleRestart} className="rounded-full border-2 border-black bg-[#E2F2F0]">
@@ -118,7 +128,7 @@ export default function Home() {
                 <h1 className="text-3xl font-headline font-bold text-black leading-tight">
                   The 10-Click Vibe Check
                 </h1>
-                <p className="text-muted-foreground text-sm italic">Highly accurate. Mildly calling you out.</p>
+                <p className="text-muted-foreground text-sm italic">Less poetry, more truth. Mildly calling you out.</p>
               </div>
 
               <div className="flex justify-center gap-6 text-sm font-medium">
@@ -128,14 +138,14 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={18} className="text-teal-400" />
-                  <span>Adapts to You</span>
+                  <span>Vibe Adaptive</span>
                 </div>
               </div>
 
               <div className="bg-[#E2F2F0] border-2 border-black rounded-3xl p-6 text-left space-y-3">
                 <h3 className="font-bold text-lg">Wait, how does this work?</h3>
                 <p className="text-sm leading-relaxed text-black/70">
-                  This isn't a normal quiz where everyone gets the same questions. Every time you click, the engine actively changes the next question to aggressively narrow down exactly what kind of person you are.
+                  We track your mundane life choices to aggressively narrow down exactly what kind of person you are. No vibes are safe.
                 </p>
               </div>
 
@@ -144,7 +154,7 @@ export default function Home() {
                 onClick={handleStart}
                 className="w-full brutal-button bg-primary hover:bg-primary/90 text-white rounded-[2rem] h-14 text-lg font-headline font-bold"
               >
-                Start the Quiz
+                Start the Vibe Check
               </Button>
             </div>
           </div>
@@ -165,9 +175,9 @@ export default function Home() {
                <BrainCircuit className="absolute inset-0 m-auto text-primary" size={32} />
             </div>
             <div className="space-y-4">
-              <h3 className="text-2xl font-headline font-bold">Analyzing your choices...</h3>
+              <h3 className="text-2xl font-headline font-bold">Connecting the dots...</h3>
               <div className="space-y-1">
-                <p className="text-sm font-bold uppercase tracking-widest text-black/40">Connecting the dots</p>
+                <p className="text-sm font-bold uppercase tracking-widest text-black/40">Vibe check in progress...</p>
                 <div className="flex gap-1 justify-center">
                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-75" />
                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-150" />
@@ -179,12 +189,12 @@ export default function Home() {
         )}
 
         {currentStep === 10 && profile && !isCalculating && (
-          <ProfileDisplay profile={profile} onRestart={handleRestart} />
+          <ProfileDisplay profile={profile} onRestart={handleRestart} aiAnalysis={aiAnalysis} />
         )}
       </div>
 
       <footer className="p-8 text-center text-xs font-bold uppercase tracking-widest text-black/40">
-        © 2026 Personality Lab • Vibe Engine V3.0 @HabelShaji
+        © 2026 Personality Lab • Vibe Engine V4.0
       </footer>
     </main>
   );

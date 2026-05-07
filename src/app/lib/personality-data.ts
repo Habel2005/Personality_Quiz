@@ -1,3 +1,4 @@
+
 export type TraitVector = {
   chaos: number;
   logic: number;
@@ -20,12 +21,7 @@ export type Prompt = {
   choices: [Choice, Choice];
 };
 
-// ==========================================
-// THE MUNDANE MICRO-DILEMMA ENGINE
-// 30+ highly relatable scenarios
-// ==========================================
 export const prompts: Prompt[] = [
-  // --- CHAOS vs. ORDER ---
   {
     id: 1,
     question: "Glance at your phone's email app right now. What does the notification badge say?",
@@ -62,8 +58,6 @@ export const prompts: Prompt[] = [
       { id: '4b', text: "I will live out of that suitcase on the floor for 2 weeks.", vector: { chaos: 4, logic: -2, order: -2 }, icon: "Luggage" }
     ]
   },
-
-  // --- LOGIC vs. EMOTION ---
   {
     id: 5,
     question: "A friend texts: 'We need to talk.'",
@@ -91,8 +85,6 @@ export const prompts: Prompt[] = [
       { id: '7b', text: "It has holes. It goes in the trash.", vector: { logic: 4, order: 2, emotion: -3 }, icon: "Trash2" }
     ]
   },
-
-  // --- IMAGINATION vs. ORDER/LOGIC ---
   {
     id: 8,
     question: "Taking a shower.",
@@ -129,8 +121,6 @@ export const prompts: Prompt[] = [
       { id: '11b', text: "Max 3 tabs. Everything else is bookmarked and closed.", vector: { order: 4, logic: 2, chaos: -3 }, icon: "Laptop" }
     ]
   },
-
-  // --- INTROVERT/EMOTION vs EXTROVERT/CHAOS ---
   {
     id: 12,
     question: "You see someone you vaguely know at the grocery store.",
@@ -167,8 +157,6 @@ export const prompts: Prompt[] = [
       { id: '15b', text: "Stand near the kitchen island and analyze the room.", vector: { logic: 3, order: 2, emotion: -2 }, icon: "Eye" }
     ]
   },
-
-  // --- THE "SPECIFIC FREQUENCIES" ---
   {
     id: 16,
     question: "Your phone battery is at 2%.",
@@ -313,7 +301,6 @@ export type Archetype = {
   description: string;
 };
 
-// Grounded Archetypes matching the mundane questions
 const archetypes: Archetype[] = [
   {
     name: "The Daydreamer",
@@ -357,19 +344,15 @@ export type ProfileResult = {
   isContradictory: boolean;
 };
 
-// Logic for dynamic selection
 export const getNextQuestion = (
   currentVector: TraitVector,
   askedQuestionIds: number[],
   allPrompts: Prompt[]
 ): Prompt => {
   const availablePrompts = allPrompts.filter(p => !askedQuestionIds.includes(p.id));
-  
   if (availablePrompts.length === 0) return allPrompts[0];
 
-  const sortedTraits = Object.entries(currentVector)
-    .sort(([, a], [, b]) => b - a);
-  
+  const sortedTraits = Object.entries(currentVector).sort(([, a], [, b]) => b - a);
   const dominantTrait = sortedTraits[0][0] as keyof TraitVector;
   const secondaryTrait = sortedTraits[1][0] as keyof TraitVector;
 
@@ -380,20 +363,19 @@ export const getNextQuestion = (
   return targetedPrompt || availablePrompts[Math.floor(Math.random() * availablePrompts.length)];
 };
 
-// Dynamic Mind-Reading Commentary
 export const generateCommentary = (vector: TraitVector, step: number): string | null => {
   if (step === 3) {
-    if (vector.chaos > vector.order) return "I see you like to live dangerously...";
-    if (vector.logic > vector.emotion) return "Very calculated. No wasted movements.";
-    if (vector.emotion > 4) return "You feel things deeply, don't you?";
+    if (vector.chaos > vector.order) return "Lowkey unhinged behavior detected...";
+    if (vector.logic > vector.emotion) return "Calculating... you're a spreadsheet in a human suit.";
+    if (vector.emotion > 4) return "Oop, the feels are leaking out.";
   }
   if (step === 6) {
-    if (vector.imagination > 8) return "Do you ever leave your own head?";
-    if (vector.order > 6 && vector.chaos > 6) return "You are an absolute walking contradiction.";
-    if (vector.order > 8) return "The precision of your choices is... unsettling.";
+    if (vector.imagination > 8) return "Wait, is your brain just 40 tabs of Wikipedia?";
+    if (vector.order > 6 && vector.chaos > 6) return "You are a walking contradiction.";
+    if (vector.order > 8) return "Your search history must be terrifyingly organized.";
   }
   if (step === 8) {
-    return "I am starting to see the exact shape of your brain...";
+    return "Analyzing the frequency... it's getting specific.";
   }
   return null;
 };
