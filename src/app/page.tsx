@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   prompts, 
   Choice, 
@@ -17,7 +17,6 @@ import { ProfileDisplay } from '@/components/profile/ProfileDisplay';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Clock, ClipboardList, BrainCircuit } from 'lucide-react';
-import { analyzeVibe, VibeAnalysisOutput } from '@/ai/flows/vibe-analysis-flow';
 
 const INITIAL_VECTOR: TraitVector = {
   chaos: 0,
@@ -35,7 +34,12 @@ export default function Home() {
   const [engineComment, setEngineComment] = useState<string | null>(null);
   const [askedIds, setAskedIds] = useState<number[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
-  const [aiAnalysis, setAiAnalysis] = useState<VibeAnalysisOutput | null>(null);
+  const [history, setHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('vibe_history');
+    if (saved) setHistory(JSON.parse(saved));
+  }, []);
 
   const handleStart = () => {
     const firstQuestion = getNextQuestion(INITIAL_VECTOR, [], prompts);
@@ -67,17 +71,19 @@ export default function Home() {
       setIsCalculating(true);
       const finalProfile = getProfile(nextVector);
       
-      analyzeVibe({
-        traits: finalProfile.traits,
-        archetype: finalProfile.archetype,
-        vector: finalProfile.vector as any
-      }).then(res => setAiAnalysis(res));
+      // Save to history (Local Database)
+      const newHistory = [
+        { ...finalProfile, date: new Date().toISOString() },
+        ...history
+      ].slice(0, 5); // Keep last 5
+      localStorage.setItem('vibe_history', JSON.stringify(newHistory));
+      setHistory(newHistory);
 
       setTimeout(() => {
         setProfile(finalProfile);
         setIsCalculating(false);
         setCurrentStep(10);
-      }, 2500);
+      }, 2000);
     }
   };
 
@@ -88,7 +94,6 @@ export default function Home() {
     setEngineComment(null);
     setAskedIds([]);
     setCurrentPrompt(null);
-    setAiAnalysis(null);
   };
 
   const progress = (currentStep / 10) * 100;
@@ -126,26 +131,26 @@ export default function Home() {
 
               <div className="space-y-2">
                 <h1 className="text-3xl font-headline font-bold text-black leading-tight">
-                  The 10-Click Vibe Check
+                  The Vibe Engine
                 </h1>
-                <p className="text-muted-foreground text-sm italic">Less poetry, more truth. Mildly calling you out.</p>
+                <p className="text-muted-foreground text-sm italic">Direct. Honest. Logic-driven.</p>
               </div>
 
               <div className="flex justify-center gap-6 text-sm font-medium">
                 <div className="flex items-center gap-2">
                   <ClipboardList size={18} className="text-orange-400" />
-                  <span>10 Questions</span>
+                  <span>10 Probes</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={18} className="text-teal-400" />
-                  <span>Vibe Adaptive</span>
+                  <span>Adaptive Flow</span>
                 </div>
               </div>
 
               <div className="bg-[#E2F2F0] border-2 border-black rounded-3xl p-6 text-left space-y-3">
-                <h3 className="font-bold text-lg">Wait, how does this work?</h3>
+                <h3 className="font-bold text-lg">No Cloud AI.</h3>
                 <p className="text-sm leading-relaxed text-black/70">
-                  We track your mundane life choices to aggressively narrow down exactly what kind of person you are. No vibes are safe.
+                  This engine calculates your neural vector locally. Your data stays in your browser. We just map the frequencies.
                 </p>
               </div>
 
@@ -154,9 +159,23 @@ export default function Home() {
                 onClick={handleStart}
                 className="w-full brutal-button bg-primary hover:bg-primary/90 text-white rounded-[2rem] h-14 text-lg font-headline font-bold"
               >
-                Start the Vibe Check
+                Sync Frequencies
               </Button>
             </div>
+
+            {history.length > 0 && (
+              <div className="brutal-card p-6 bg-white space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-black/40">Neural History</h4>
+                <div className="space-y-2">
+                  {history.map((h, i) => (
+                    <div key={i} className="flex justify-between items-center text-sm border-b border-black/5 pb-2">
+                      <span className="font-bold">{h.archetype}</span>
+                      <span className="text-xs text-black/40">{new Date(h.date).toLocaleDateString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -175,26 +194,19 @@ export default function Home() {
                <BrainCircuit className="absolute inset-0 m-auto text-primary" size={32} />
             </div>
             <div className="space-y-4">
-              <h3 className="text-2xl font-headline font-bold">Connecting the dots...</h3>
-              <div className="space-y-1">
-                <p className="text-sm font-bold uppercase tracking-widest text-black/40">Vibe check in progress...</p>
-                <div className="flex gap-1 justify-center">
-                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-75" />
-                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-150" />
-                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-225" />
-                </div>
-              </div>
+              <h3 className="text-2xl font-headline font-bold">Compiling neural map...</h3>
+              <p className="text-sm font-bold uppercase tracking-widest text-black/40">Logic engine processing...</p>
             </div>
           </div>
         )}
 
         {currentStep === 10 && profile && !isCalculating && (
-          <ProfileDisplay profile={profile} onRestart={handleRestart} aiAnalysis={aiAnalysis} />
+          <ProfileDisplay profile={profile} onRestart={handleRestart} history={history} />
         )}
       </div>
 
       <footer className="p-8 text-center text-xs font-bold uppercase tracking-widest text-black/40">
-        © 2026 Personality Lab • Vibe Engine V4.0
+        © 2026 Personality Lab • Offline Core V5.0
       </footer>
     </main>
   );
